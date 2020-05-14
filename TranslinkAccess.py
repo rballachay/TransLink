@@ -1,3 +1,9 @@
+"""
+Created on Wed May 13 22:12:54 2020
+
+@author: RileyBallachay
+"""
+
 import os
 import numpy as np 
 import pandas as pd
@@ -34,7 +40,6 @@ class TranslinkAPI:
     def __parse_XML(xtree, df_cols): 
         """Parse the input XML file and store the result in a pandas 
         DataFrame with the given columns. 
-
         The first element of df_cols is supposed to be the identifier 
         variable, which is an attribute of each node element in the 
         XML data; other features will be parsed from the text content 
@@ -77,10 +82,10 @@ class TranslinkAPI:
                     root = et.ElementTree(et.fromstring(response.content))         
 
                     if INIT:
-                        Alldata = self.__parse_XML(root,df_cols)
+                        Alldata = self.__parse_XML(root,self.df_cols)
                         INIT=False
                     else:
-                        Alldata = Alldata.append(self.__parse_XML(root,df_cols)).drop_duplicates()
+                        Alldata = Alldata.append(self.__parse_XML(root,self.df_cols)).drop_duplicates()
 
             Alldata.to_csv('locationdata.csv')
 
@@ -148,12 +153,10 @@ class TranslinkAPI:
         coordinates with the specified pixel size. The function converts
         the return type from bytes to integer and cleans for plotting."""
         
-        URL = 'https://www.mapquestapi.com/staticmap/v4/getmap?\
-        key=JqeDWINXYaf3cRp7mwesQfPNt6GRzWaK&bestfit=49.291977,\
-        -123.282268,49.215351,-123.023472&size=1520,700'
+        URL = 'https://www.mapquestapi.com/staticmap/v4/getmap?key=JqeDWINXYaf3cRp7mwesQfPNt6GRzWaK&bestfit=49.291977,-123.282268,49.215351,-123.023472&size=1520,700'
         
         image = requests.get(URL)
-        image_bytes = img.content
+        image_bytes = image.content
         decoded = cv2.imdecode(np.frombuffer(image_bytes, np.uint8), -1)
         plotimg = cv2.cvtColor(decoded, cv2.COLOR_BGR2RGB)
         plotimg = cv2.GaussianBlur(plotimg,(1,1),0)
@@ -165,11 +168,10 @@ class TranslinkAPI:
         every stop in the region, with color coding for the stop 
         direction and the number of busses that stop there."""
         
-        fig, ax = plt.subplots(figsize=(10,5),dpi=300)
+        fig, ax = plt.subplots(figsize=(10,5),dpi=200)
         ax.imshow(self.plottedImage,alpha=0.7)
-        fig = sns.scatterplot(x='X',y='Y',size='# Busses',hue='Direction',data=Coords,linewidth=0,alpha=0.5,sizes=(10, 50),palette=sns.color_palette("cubehelix", 5))
+        fig = sns.scatterplot(x='X',y='Y',size='# Busses',hue='Direction',data=self.coords,linewidth=0,alpha=0.5,sizes=(10, 50),palette=sns.color_palette("cubehelix", 5))
         plt.setp(fig.get_legend().get_texts(), fontsize='6',alpha=0.5)
         plt.axis('off')
         plt.savefig("test.png", bbox_inches='tight')
-        
-    
+        plt.show()
